@@ -46,14 +46,14 @@
 unsigned long  Time_Cont = 0;       //定时器计数器
 unsigned int count = 0;
 
-char n[25]="E=";
-char m[13]=" N=";
+char n[26]="E=";
+char m[14]=" N=";
 char *s;
 char *i=Save_Data.longitude;
 char *j=Save_Data.latitude;
 
-char phoneNumber[] = "15868146005";		//替换成需要被拨打电话的号码
-char msg[25];		//短信内容	
+char phoneNumber[] = "517985";		//替换成需要被拨打电话的号码
+char msg[25]= "location";		//短信内容	
 
 char TCPServer[] = "103.44.145.208";		//TCP服务器地址
 char Port[] = "10380";						//端口	
@@ -102,6 +102,15 @@ int main(void)
  	else if(sendCommand("AT+CREG?\r\n", ",5", 3000, 10) == Success	);//漫游SIM卡
  	else	errorLog(3);
  	delay_ms(10);
+	
+	
+	if (sendCommand("AT+CMGF=1\r\n", "OK\r\n", 1000, 10) == Success);
+	else errorLog(3);
+	delay_ms(10);
+
+	if (sendCommand("AT+CSCS=\"GSM\"\r\n", "OK\r\n", 1000, 10) == Success);
+	else errorLog(5);
+	delay_ms(10);
 
 	if (sendCommand("AT+QGNSSC?\r\n", "+QGNSSC: 1", 5000, 1) == Success);
 	else if (sendCommand("AT+QGNSSC=1\r\n", "OK\r\n", 5000, 10) == Success);
@@ -110,7 +119,7 @@ int main(void)
 	
 	
 	clrStruct();
-	
+//	sendMessage(phoneNumber,msg);		//发送短信
 	w=0;
 	while(1)
 	{ 
@@ -132,10 +141,11 @@ int main(void)
 	if(w==1)
 	{
 	    w=0;
-	   
+		
 		if (sendCommand("AT+QGNSSRD=\"NMEA/RMC\"\r\n", "OK\r\n", 2000, 10) == Success);
 		else errorLog(6);
 
+		
 		Save_Data.isGetData = true;
 		memset(Save_Data.GPS_Buffer, 0, GPS_Buffer_Length);      //清空
 		memcpy(Save_Data.GPS_Buffer, USART2_RX_BUF, point2);
@@ -274,6 +284,8 @@ void sendMessage(char *number,char *msg)
 	if (sendCommand(send_buf, "OK\r\n", 10000, 5) == Success);
 	else errorLog(8);
 }
+
+
 
 void errorLog(int num)
 {
